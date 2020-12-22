@@ -40,6 +40,17 @@ class PredicateGenerator():
         print(f'zsize: {zsize}')
         print(f'with_test_function: {with_test_function}')
 
+        shape_name = shape.lower()
+        if shape_name == 'diamond':
+            self.generate_diamond(block, size, height,
+                                  zsize, with_test_function)
+        if shape_name == 'pyramid':
+            self.generate_pyramid(block, size, height,
+                                  zsize, with_test_function)
+
+    def generate_pyramid(self, block, size, height=None, zsize=None, with_test_function=False):
+        pass
+
     def generate_diamond(self, block, distance, height=None, distanceZ=None, with_test_function=False):
         """ Generates a predicate to check in a diamond-shaped area.
 
@@ -58,14 +69,10 @@ class PredicateGenerator():
         if height == None:
             height = distance
 
-        # validate block id
-        # TODO: maybe validate this in the GUI code
         try:
-            name = block.get('tag', block['id'])
+            name = block.get('tag', block['block'])
         except KeyError:
-            raise Exception('A block id or tag must be specified!')
-        if name.count(':') > 1:
-            raise Exception('Invalid namespaced id or tag!')
+            name = block.get('tag', block['tag'])
 
         if with_test_function:
             test_function = open('near_' + name.split(':')
@@ -75,8 +82,11 @@ class PredicateGenerator():
         for dy in range(-height, height + 1):
             # decrease width as we move away from the centre
             width = distance - abs(dy)
+            widthz = width
+            if distanceZ != None:
+                widthz = distanceZ - abs(dy)
             for dx in range(-width, width + 1):
-                for dz in range(-width, width + 1):
+                for dz in range(-widthz, widthz + 1):
                     self.predicate["terms"].append({
                         "condition": "minecraft:location_check",
                         "offsetX": dx,
@@ -88,12 +98,8 @@ class PredicateGenerator():
                     })
 
                     if with_test_function:
-                        if (dx == 0 and dy == 0 and dz == 0) and (block.get('id', None) != None):
-                            test_function.write(
-                                "setblock ~{} ~{} ~{} ".format(dx, dy, dz) + name + '\n')
-                        else:
-                            test_function.write(
-                                TEST_FUNCTION_TEMPLATE.format(dx, dy, dz))
+                        test_function.write(
+                            TEST_FUNCTION_TEMPLATE.format(dx, dy, dz))
 
         if with_test_function:
             test_function.close()
@@ -187,14 +193,14 @@ functions folder!
                     key, value = block_state.split('=')
                     state_dict[key] = value
                 block["state"] = state_dict
-            
-            size = int(self.size_entry.get())
+
+            size = abs(int(self.size_entry.get()))
             height = size
             zsize = size
             if len(self.height_entry.get()) > 0:
-                height = int(self.height_entry.get())
+                height = abs(int(self.height_entry.get()))
             if len(self.zsize_entry.get()) > 0:
-                zsize = int(self.zsize_entry.get())
+                zsize = abs(int(self.zsize_entry.get()))
 
             with_test_function = False
             if self.include_test_function.get() == 'True':

@@ -1,10 +1,10 @@
 {
-    "is_tag": true,
-    "name": "minecraft:campfires",
+    "is_tag": false,
+    "name": "minecraft:campfire",
     "shape": "Diamond",
     "size": 5,
     "state": {
         "lit": "true"
     },
-    "test_function": false
+    "test_function": true
 }
