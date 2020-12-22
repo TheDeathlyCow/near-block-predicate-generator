@@ -23,6 +23,23 @@ class PredicateGenerator():
             "terms": []
         }
 
+    def generate(self, block, size, shape, height=None, zsize=None, with_test_function=False):
+        """ Generates a predicate file.
+
+        @param: block\n
+        @param: size\n
+        @param: shape\n
+        @param: height\n
+        @param: zsize\n
+        @param: with_test_function
+        """
+        print(f'block: {block}')
+        print(f'size: {size}')
+        print(f'shape: {shape}')
+        print(f'height: {height}')
+        print(f'zsize: {zsize}')
+        print(f'with_test_function: {with_test_function}')
+
     def generate_diamond(self, block, distance, height=None, distanceZ=None, with_test_function=False):
         """ Generates a predicate to check in a diamond-shaped area.
 
@@ -91,6 +108,7 @@ class PredicateGenerator():
 
 class GUI:
     def __init__(self, window):
+        self.generator = PredicateGenerator()
         self.shapes = ['Diamond', 'Pyramind', 'Cuboid', 'Sphere']
 
         self.block_entry = LabelledEntry(
@@ -151,7 +169,45 @@ functions folder!
         self.error_label.grid(row=11, column=0, pady=5)
 
     def generate(self):
-        print('generate')
+        if self._validate_current_state():
+            block = {}
+            if self.block_entry.label.get() == 'Block Tag':
+                block = {
+                    "tag": self.block_entry.get()
+                }
+            else:
+                block = {
+                    "block": self.block_entry.get()
+                }
+
+            if len(self.state_entry.get()) > 0:
+                state_list = self.state_entry.get().split(',')
+                state_dict = {}
+                for block_state in state_list:
+                    key, value = block_state.split('=')
+                    state_dict[key] = value
+                block["state"] = state_dict
+            
+            size = int(self.size_entry.get())
+            height = size
+            zsize = size
+            if len(self.height_entry.get()) > 0:
+                height = int(self.height_entry.get())
+            if len(self.zsize_entry.get()) > 0:
+                zsize = int(self.zsize_entry.get())
+
+            with_test_function = False
+            if self.include_test_function.get() == 'True':
+                with_test_function = True
+
+            self.generator.generate(
+                block,
+                size,
+                self.shape_entry.get(),
+                height=height,
+                zsize=zsize,
+                with_test_function=with_test_function
+            )
 
     def save_settings(self):
         """
@@ -215,6 +271,8 @@ functions folder!
             settings_file.close()
             print('Successfully saved current state.')
             # self.error_label['text'] = 'Valid Input'
+            return True
+        return False
         print(settings)
 
     def load_settings(self):
@@ -251,7 +309,7 @@ functions folder!
                 self.block_entry.entry.insert(END, namespaced_id[0])
             else:
                 self.error_label['text'] = load_error_message
-        
+
         if settings.get('is_tag', None) != None:
             if settings['is_tag'] == True:
                 self.block_entry.label.current(1)
@@ -262,16 +320,17 @@ functions folder!
                 self.shape_entry.combobox.current(index)
             else:
                 self.error_label['text'] = load_error_message
-        
+
         if settings.get('test_function', None) != None:
             if settings['test_function'] == True:
                 self.include_test_function.combobox.current(1)
-        
+
         if settings.get('state', None) != None:
             if isinstance(settings['state'], dict):
                 state_string = ""
                 for key in settings['state'].keys():
-                    state_string += key + '=' + str(settings['state'][key]).lower() + ','
+                    state_string += key + '=' + \
+                        str(settings['state'][key]).lower() + ','
                 state_string = state_string[:-1]
                 self.state_entry.entry.delete(0, 'end')
                 self.state_entry.entry.insert(END, state_string)
