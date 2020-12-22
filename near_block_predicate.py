@@ -5,6 +5,9 @@ import math
 
 TEST_FUNCTION_TEMPLATE = """setblock ~{} ~{} ~{} minecraft:red_stained_glass\n"""
 
+WINDOW_WIDTH = 550
+WINDOW_HEIGHT = 500
+WIDGET_WIDTH = 35
 class PredicateGenerator():
 
     def __init__(self):
@@ -31,7 +34,8 @@ class PredicateGenerator():
         if height == None:
             height = distance
 
-        # validate block id
+        # validate block id 
+        # TODO: maybe validate this in the GUI code
         try:
             name = block.get('tag', block['id'])
         except KeyError:
@@ -71,51 +75,99 @@ class PredicateGenerator():
     # === end generate diamond ===
 # === end generator class ===
 
+# === start GUI glass definitions ===
 class GUI:
     def __init__(self, window):
+        self.shapes = ['Diamond', 'Pyramind', 'Cuboid', 'Sphere']
+
+        self.block_entry = LabelledEntry(window, 'Block (tag or ID):', 0, 0, with_namespace=True)
+        self.state_entry = LabelledEntry(window, 'Block State (list, optional):', 1, 0)
+        self.shape_entry = LabelledCombobox(window, 'Shape:', 2, 0, self.shapes)
+
+        self.size_entry = LabelledEntry(window, 'Size:', 3, 0)
+        self.height_entry = LabelledEntry(window, 'Height (optional):', 4, 0)
+        self.size_entry = LabelledEntry(window, 'Z-Size (optional):', 5, 0)
+
+        self.info_string = """Block state must be a list of block state values, 
+as you would put them in a setblock command.
+
+For example, for a campfire you might put: 
+signal_fire=true,lit=false
+
+Do not include any brackets or spaces.    
+"""
+        self.info_label = Label(window, text=self.info_string)
+        self.info_label.grid(row=6,column=0, columnspan=2)
+
+
+        self.load_settings_entry = LabelledEntry(window, 'Load Settings from file', 7, 0)
+        self.load_settings_button = Button(window, text='Load', command= lambda : self.load_settings())
+        self.load_settings_button.grid(row=7, column=2, sticky=(E, W))
+
+        self.save_settings_entry = LabelledEntry(window, 'Load Settings from file', 7, 0)
+        self.save_settings_button = Button(window, text='Load', command= lambda : self.load_settings())
+        self.save_settings_button.grid(row=7, column=2, sticky=(E, W))
+
+    def save_settings(self):
+        pass
+    
+    def load_settings(self):
         pass
 
+    def read_data(self):
+        pass
 
-class TextEntry:
-    def __init__(self, parent, label_text, row, col, with_namespace=False):
+class LabelledWidget:
+    def __init__(self, parent, label_text, row, col):
+        self.parent = parent
+        self.row = row
+        self.col = col
 
         self.label_frame = Frame(parent, borderwidth=8, relief=RIDGE)
         self.label_frame.grid(row=row, column=col)
 
-        self.entry_frame = Frame(parent, borderwidth=8, relief=RIDGE)
-        self.entry_frame.grid(row=row, column=col + 1)
+        self.widget_frame = Frame(parent, borderwidth=8, relief=RIDGE)
+        self.widget_frame.grid(row=row, column=col + 1)
 
         self.label_text = label_text
         self.label = Label(self.label_frame, text=self.label_text)
-        self.label.grid(row=row, column=col, padx=5)
+        self.label.grid(row=row, column=col)
+        self.label.config(width=int(WIDGET_WIDTH))
+        
 
-        self.entry = Entry(self.entry_frame, width=15)
-        self.entry.grid(row=row, column=col + 1, padx=5)
+
+class LabelledCombobox(LabelledWidget):
+    def __init__(self, parent, label_text, row, col, values):
+        super().__init__(parent, label_text, row, col)
+        self.values = values
+        self.combobox = Combobox(self.widget_frame, values=values, width=WIDGET_WIDTH - 2, state='readonly')
+        self.combobox.grid(row=row, column=col+1)
+        self.combobox.current(0)
+
+
+class LabelledEntry(LabelledWidget):
+    def __init__(self, parent, label_text, row, col, with_namespace=False):
+        super().__init__(parent, label_text, row, col)
+
+        self.entry = Entry(self.widget_frame, width= int(WIDGET_WIDTH))
+        self.entry.grid(row=row, column=col + 1)
 
         if with_namespace:
-            self.entry.grid(row=row, column=col + 3, padx=5)
-            self.colon_label = Label(self.entry_frame, text=':')
+            self.entry.grid(row=row, column=col + 3)
+            self.colon_label = Label(self.widget_frame, text=':')
             self.colon_label.grid(row=row, column=col + 2)
-            self.namespace_entry = Entry(self.entry_frame, width=15)
-            self.namespace_entry.grid(row=row, column=col, padx=5)
+            self.namespace_entry = Entry(self.widget_frame, width=int(WIDGET_WIDTH/2))
+            self.namespace_entry.grid(row=row, column=col)
             self.namespace_entry.insert(END, 'minecraft')
-            
-        
-        
 
-class LabelledEntry:
-    def __init__(self, parent, text, row, col):
-        self.label_text = text
-        self.label = Label(parent, text=text)
-        self.label.grid(row=row, column=col, padx=2)
+            self.entry.config(width=int(WIDGET_WIDTH/2))
+# === end GUI glass definitions ===
 
-        self.entry = Entry(parent, width=15)
-        self.entry.grid(row=row, column=col+1, padx=2)
 def gui():
     window = Tk()
-    window.geometry('500x200')
-
-    gui = TextEntry(window, 'test', 0, 0, True)
+    window.geometry(str(WINDOW_WIDTH) + 'x' + str(WINDOW_HEIGHT))
+    window.title('Near Block Predicate Generator')
+    gui = GUI(window)
     window.mainloop()
 
 def command_terminal():
@@ -125,7 +177,7 @@ def command_terminal():
     block = {
         'id': block_name
     }
-    generate_diamond(block, distance, with_test_function=True)
+    # generate_diamond(block, distance, with_test_function=True)
 
     exit_token = input('Press ENTER to exit...')
 
