@@ -104,9 +104,15 @@ Do not include any brackets or spaces.
         self.load_settings_button = Button(window, text='Load', command= lambda : self.load_settings())
         self.load_settings_button.grid(row=7, column=2, sticky=(E, W))
 
-        self.save_settings_entry = LabelledEntry(window, 'Load Settings from file', 7, 0)
-        self.save_settings_button = Button(window, text='Load', command= lambda : self.load_settings())
-        self.save_settings_button.grid(row=7, column=2, sticky=(E, W))
+        self.save_settings_entry = LabelledEntry(window, 'Save Settings to file', 8, 0)
+        self.save_settings_button = Button(window, text='Save', command= lambda : self.save_settings())
+        self.save_settings_button.grid(row=8, column=2, sticky=(E, W))
+
+        self.generate_button = Button(window, text='Generate', command= lambda : self.generate())
+        self.generate_button.grid(row=9, column=0, sticky=(E, W), pady=15, columnspan=2)
+
+    def generate(self):
+        print('generate')
 
     def save_settings(self):
         pass
