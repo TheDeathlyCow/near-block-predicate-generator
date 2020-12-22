@@ -69,11 +69,53 @@ class PredicateGenerator():
         outfile.write(json.dumps(self.predicate, sort_keys=True, indent=4))
         outfile.close()
     # === end generate diamond ===
+# === end generator class ===
 
+class GUI:
+    def __init__(self, window):
+        pass
+
+
+class TextEntry:
+    def __init__(self, parent, label_text, row, col, with_namespace=False):
+
+        self.label_frame = Frame(parent, borderwidth=8, relief=RIDGE)
+        self.label_frame.grid(row=row, column=col)
+
+        self.entry_frame = Frame(parent, borderwidth=8, relief=RIDGE)
+        self.entry_frame.grid(row=row, column=col + 1)
+
+        self.label_text = label_text
+        self.label = Label(self.label_frame, text=self.label_text)
+        self.label.grid(row=row, column=col, padx=5)
+
+        self.entry = Entry(self.entry_frame, width=15)
+        self.entry.grid(row=row, column=col + 1, padx=5)
+
+        if with_namespace:
+            self.entry.grid(row=row, column=col + 3, padx=5)
+            self.colon_label = Label(self.entry_frame, text=':')
+            self.colon_label.grid(row=row, column=col + 2)
+            self.namespace_entry = Entry(self.entry_frame, width=15)
+            self.namespace_entry.grid(row=row, column=col, padx=5)
+            self.namespace_entry.insert(END, 'minecraft')
+            
+        
+        
+
+class LabelledEntry:
+    def __init__(self, parent, text, row, col):
+        self.label_text = text
+        self.label = Label(parent, text=text)
+        self.label.grid(row=row, column=col, padx=2)
+
+        self.entry = Entry(parent, width=15)
+        self.entry.grid(row=row, column=col+1, padx=2)
 def gui():
     window = Tk()
-    
+    window.geometry('500x200')
 
+    gui = TextEntry(window, 'test', 0, 0, True)
     window.mainloop()
 
 def command_terminal():
@@ -90,7 +132,7 @@ def command_terminal():
 if __name__ == '__main__':
     # pass
     
-    # gui()
-    command_terminal()
+    gui()
+    # command_terminal()
 
     
